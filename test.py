@@ -13,12 +13,12 @@ import subprocess
 host = (
         "192.168.1.100",
         "192.168.1.101",
-        "192.168.1.102",
+#        "192.168.1.102",
         "192.168.1.103"
 )
 
 user = 'test'
-passwd = crt.Dialog.Prompt("Enter password for", "Login", "", True)
+passwd = crt.Dialog.Prompt("PIN and OTP", "Login", "", True)
 
 MsgBox = crt.Dialog.MessageBox
 Prompt = crt.Dialog.Prompt
@@ -179,7 +179,7 @@ def Main():
             return
     DisplayStatus("CLI shell prompt is: '{}'".format(strPrompt))
 
-    # Attempt to check if we're in privileged/enable mode:
+## Attempt to check if we're in privileged/enable mode:
     DisplayStatus("Checking to ensure the device is in privileged/enable mode...")
     if strPrompt.rstrip()[-1] != '#':
         strMsg = "Must  'enable'  first!"
@@ -189,8 +189,7 @@ def Main():
         return
     DisplayStatus("  --> OK.")
 
-    # Attempt to ensure we're not in (config) mode - bad place to
-    # be in if running this script, right?
+##Check if we're in config mode
     DisplayStatus("Checking to ensure the device is *not* in (config) mode...")
 ## Var for getting hostname
     strHostname = GetHostname()
@@ -212,7 +211,7 @@ def Main():
     DisplayStatus("Current session columns: {}".format(nColsOrig))
 
     DisplayStatus("Getting device's term info...")
-    # Get Term size info
+## Get Term size info
     objTab.Screen.Send("sh term\r")
     objTab.Screen.WaitForString("sh term")
     vWaitFors = [strPrompt,
@@ -265,7 +264,7 @@ def Main():
             objTab.Screen.Send(" ")
             continue
 
-    # Turn off paging so that we don't have to deal with "more" prompts
+## Turn off paging so that we don't have to deal with "more" prompts
     DisplayStatus("Turning off paging...")
     objTab.Screen.Send("{}\r".format(strPagerOffCommand))
     objTab.Screen.WaitForString(strPrompt)
@@ -347,7 +346,7 @@ def Main():
         strSavedConfigsFolder += g_strSessionPath
 
 ## Make sure that the relative config folder where configs are
-## to be saved, hat it ends with a trailing "/" char:
+## to be saved ends with a trailing "/" char:
     if strSavedConfigsFolder[-1] != "/":
         strSavedConfigsFolder += "/"
 
@@ -404,7 +403,7 @@ def Main():
     else:
         DisplayStatus("Not prompting for filename (either running interactively, or /confirm-filename option val=off).")
 
-    # Write the config output data to the local file:
+##Write the config output data to the local file:
     DisplayStatus("Opening destination file...")
     try:
         with open(strFilename, "w") as objFile:
