@@ -10,12 +10,8 @@ import sys
 import time
 import subprocess
 
-host = (
-        "192.168.1.100",
-        "192.168.1.101",
-#        "192.168.1.102",
-        "192.168.1.103"
-)
+hostfile = open(r"C:\Users\IEUser\Desktop\hosts.txt", "r")
+hostArray = []
 
 user = 'test'
 passwd = crt.Dialog.Prompt("PIN and OTP", "Login", "", True)
@@ -614,7 +610,12 @@ def GetCurrentSessionNameAndPath():
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-for i in range(0, len(host)):
-    cmd = "/SSH2 /L %s /PASSWORD %s /C 3DES /M SHA1 %s" % (user, passwd, host[i])
+for line in hostfile:
+    session = line.strip()
+    if session:
+        hostArray.append(session)
+
+for session in hostArray:
+    cmd = "/SSH2 /L %s /PASSWORD %s /C 3DES /M SHA1 %s" % (user, passwd, session)
     crt.Session.Connect(cmd)
     Main()
