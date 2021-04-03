@@ -1,10 +1,17 @@
 #$language = "Python"
 #$interface = "1.0"
+
+## Things to work out:
+## Import line 64 from backup2
+## Write variable to read hostname, line 62
+## Find method to break out of interactive mode
+
 import os
 
 user = 'test'
 passwd = crt.Dialog.Prompt("PIN and OTP", "Login", "", True)
-
+server = "192.168.1.10"
+confg = "confg"
 def Main():
 	errorMessages = ""
 
@@ -41,35 +48,31 @@ def Main():
 		# the list.
 		if crt.Session.Connected:
 			crt.Screen.Synchronous = True
-
-			# When we first connect, there will likely be data arriving from the
-			# remote system.  This is one way of detecting when it's safe to
-			# start sending data.
 			while True:				
 				if not crt.Screen.WaitForCursor(1):
 					break
-			# Once the cursor has stopped moving for about a second, we'll
-			# assume it's safe to start interacting with the remote system.
-
-			# Get the shell prompt so that we can know what to look for when
-			# determining if the command is completed. Won't work if the prompt
-			# is dynamic (e.g. changes according to current working folder, etc)
+            
+			cmd = "copy run tftp://%s/%s-%s\n" % (server, session, confg)
 			row = crt.Screen.CurrentRow
 			prompt = crt.Screen.Get(row, 0, row, crt.Screen.CurrentColumn - 1)
 			prompt = prompt.strip()
-      
-      cmd = "copy run tftp:\\\\192.168.1.10\\", session, "-confg\n"
+			
+			crt.Screen.Send("conf t\n")
+			# Wait for the command to complete, by looking for the prompt to
+			# appear once again.
+			crt.Screen.WaitForString("(config)#")
+
+			crt.Screen.Send("file prompt quiet\n")
+			# Wait for the command to complete, by looking for the prompt to
+			# appear once again.
+			crt.Screen.WaitForString("(config)#")
+            
+			crt.Screen.Send("exit\n")
+			# Wait for the command to complete, by looking for the prompt to
+			# appear once again.
+			crt.Screen.WaitForString(prompt)
+
 			crt.Screen.Send(cmd)
-			# Wait for the command to complete, by looking for the prompt to
-			# appear once again.
-			crt.Screen.WaitForString(prompt)
-
-			crt.Screen.Send("\n")
-			# Wait for the command to complete, by looking for the prompt to
-			# appear once again.
-			crt.Screen.WaitForString(prompt)
-
-			crt.Screen.Send("\n")
 			# Wait for the command to complete, by looking for the prompt to
 			# appear once again.
 			crt.Screen.WaitForString(prompt)
@@ -89,6 +92,13 @@ def Main():
 	else:
 		crt.Dialog.MessageBox("Tasks completed.  The following errors occurred:\n" + errorMessages)
 
-	#crt.Quit()
+	crt.Quit()
+
+
+
+#for session in sessionsArray:
+ #   cmd = "/SSH2 /L %s /PASSWORD %s /C 3DES /M SHA1 %s" % (user, passwd, session)
+  #  crt.Session.Connect(cmd)
+   # Main()
 
 Main()
