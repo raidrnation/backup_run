@@ -1,11 +1,6 @@
 #$language = "Python"
 #$interface = "1.0"
 
-## Things to work out:
-## Import line 64 from backup2
-## Write variable to read hostname, line 62
-## Find method to break out of interactive mode
-
 import os
 
 user = 'test'
