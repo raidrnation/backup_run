@@ -89,12 +89,5 @@ def Main():
 		crt.Dialog.MessageBox("Tasks completed.  The following errors occurred:\n" + errorMessages)
 
 	crt.Quit()
-
-
-
-#for session in sessionsArray:
- #   cmd = "/SSH2 /L %s /PASSWORD %s /C 3DES /M SHA1 %s" % (user, passwd, session)
-  #  crt.Session.Connect(cmd)
-   # Main()
-
+	
 Main()
