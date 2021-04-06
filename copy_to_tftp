@@ -3,7 +3,7 @@
 
 import os
 
-user = 'test'
+user = "test"
 passwd = crt.Dialog.Prompt("PIN and OTP", "Login", "", True)
 server = "192.168.1.10"
 confg = "confg"
@@ -12,68 +12,61 @@ def Main():
 	errorMessages = ""
 
 	sessionsFileName = open(r"C:\Users\IEUser\Desktop\hosts.txt", "r")
-#	if not os.path.exists(sessionsFileName):
-#		crt.Dialog.MessageBox(
-#			"Session list file not found:\n\n" +
-#			sessionsFileName + "\n\n" +
-#			"Create a session list file as described in the description of " +
-#			"this script code and then run the script again.")
-#		return
+	if not os.path.exists("C:\Users\IEUser\Desktop\hosts.txt"):
+		crt.Dialog.MessageBox(
+			"Session list file not found:\n\n" +
+			sessionsFileName + "\n\n" +
+			"Create a session list file as described in the description of " +
+			"this script code and then run the script again.")
+		return
 
 	sessionFile = open(r"C:\Users\IEUser\Desktop\hosts.txt", "r")
 	sessionsArray = []
 
 	for line in sessionFile:
 		session = line.strip()
-		if session:	# Don't add empty lines/sessions
+		if session:
 			sessionsArray.append(session)
 
 	sessionFile.close()
 
-	# Connect to each session and issue a few commands, then disconnect.
 	for session in sessionsArray:
-		#crt.Dialog.MessageBox("Connecting to Session: " + session)
 
 		try:
 			crt.Session.Connect("/SSH2 /L %s /PASSWORD %s /C 3DES /M SHA1 %s" % (user, passwd, session))
 		except ScriptError:
 			error = crt.GetLastErrorMessage()
 
-		# If we successfully connected, we'll do the work we intend to do...
-		# otherwise, we'll skip the work and move on to the next session in 
-		# the list.
 		if crt.Session.Connected:
 			crt.Screen.Synchronous = True
 			while True:				
 				if not crt.Screen.WaitForCursor(1):
 					break
-            
-			cmd = "copy run tftp://%s/%s-%s\n" % (server, session, confg)
+			
 			row = crt.Screen.CurrentRow
 			prompt = crt.Screen.Get(row, 0, row, crt.Screen.CurrentColumn - 1)
 			prompt = prompt.strip()
 			
 			crt.Screen.Send("conf t\n")
-			# Wait for the command to complete, by looking for the prompt to
-			# appear once again.
 			crt.Screen.WaitForString("(config)#")
 
 			crt.Screen.Send("file prompt quiet\n")
-			# Wait for the command to complete, by looking for the prompt to
-			# appear once again.
 			crt.Screen.WaitForString("(config)#")
             
 			crt.Screen.Send("exit\n")
-			# Wait for the command to complete, by looking for the prompt to
-			# appear once again.
-			crt.Screen.WaitForString(prompt)
+			crt.Screen.WaitForString("#")
 
+			mycommand = "show run | inc ^hostname\r"
+			crt.Screen.Send(mycommand)
+			crt.Screen.WaitForStrings([mycommand + "\r", mycommand + "\n"])
+			strHostnameData = crt.Screen.ReadString(["\r", "\n"])
+			strHostname = strHostnameData.split()[1]         
+			crt.Screen.WaitForString("#")
+			
+			cmd = "copy run tftp://%s/%s-%s\n" % (server, strHostname, confg)
 			crt.Screen.Send(cmd)
-			# Wait for the command to complete, by looking for the prompt to
-			# appear once again.
-			crt.Screen.WaitForString(prompt)
+			crt.Screen.WaitForString("#")
 
-			# Now disconnect from the remote machine...
 			crt.Session.Disconnect()
 			# Wait for the connection to close
 			while crt.Session.Connected == True:
@@ -88,6 +81,6 @@ def Main():
 	else:
 		crt.Dialog.MessageBox("Tasks completed.  The following errors occurred:\n" + errorMessages)
 
-	crt.Quit()
-	
+#	crt.Quit()
+
 Main()
