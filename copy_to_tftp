@@ -46,8 +46,6 @@ def main():
 			crt.Screen.WaitForString("(config)#")
 			crt.Screen.Send("file prompt quiet\n")
 			crt.Screen.WaitForString("(config)#")
-			crt.Screen.Send("ip tftp source-interface loop0\n")
-			crt.Screen.WaitForString("(config)#")
 			crt.Screen.Send("exit\n")
 			crt.Screen.WaitForString("#")
 			name_cmd = "show run | inc ^hostname\r"
