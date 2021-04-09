@@ -1,23 +1,20 @@
-#$language = "Python"
-#$interface = "1.0"
+# $language = "python"
+# $interface = "1.0"
 
 import os
 
-user = "test"
+username = "test"
 passwd = crt.Dialog.Prompt("PIN and OTP", "Login", "", True)
-server = "192.168.1.10"
+tftpserver = "192.168.1.10"
 confg = "confg"
 
-def Main():
-	errorMessages = ""
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+def main():
+	errorMessages = ""
 	sessionsFileName = open(r"C:\Users\IEUser\Desktop\hosts.txt", "r")
 	if not os.path.exists("C:\Users\IEUser\Desktop\hosts.txt"):
-		crt.Dialog.MessageBox(
-			"Session list file not found:\n\n" +
-			sessionsFileName + "\n\n" +
-			"Create a session list file as described in the description of " +
-			"this script code and then run the script again.")
+		crt.Dialog.MessageBox("Hostfile not found")
 		return
 
 	sessionFile = open(r"C:\Users\IEUser\Desktop\hosts.txt", "r")
@@ -29,58 +26,54 @@ def Main():
 			sessionsArray.append(session)
 
 	sessionFile.close()
-
 	for session in sessionsArray:
-
+	
 		try:
-			crt.Session.Connect("/SSH2 /L %s /PASSWORD %s /C 3DES /M SHA1 %s" % (user, passwd, session))
+			crt.Session.Connect("/SSH2 /L %s /PASSWORD %s /C 3DES /M SHA1 %s" % (username, passwd, session))	
 		except ScriptError:
 			error = crt.GetLastErrorMessage()
 
 		if crt.Session.Connected:
 			crt.Screen.Synchronous = True
-			while True:				
+			while True:
 				if not crt.Screen.WaitForCursor(1):
 					break
-			
 			row = crt.Screen.CurrentRow
-			prompt = crt.Screen.Get(row, 0, row, crt.Screen.CurrentColumn - 1)
+			prompt = crt.Screen.Get(row, 0, row, crt.Screen.CurrentColumn -1)
 			prompt = prompt.strip()
-			
+
 			crt.Screen.Send("conf t\n")
 			crt.Screen.WaitForString("(config)#")
-
 			crt.Screen.Send("file prompt quiet\n")
 			crt.Screen.WaitForString("(config)#")
-            
+			crt.Screen.Send("ip tftp source-interface loop0\n")
+			crt.Screen.WaitForString("(config)#")
 			crt.Screen.Send("exit\n")
 			crt.Screen.WaitForString("#")
-
-			mycommand = "show run | inc ^hostname\r"
-			crt.Screen.Send(mycommand)
-			crt.Screen.WaitForStrings([mycommand + "\r", mycommand + "\n"])
+			name_cmd = "show run | inc ^hostname\r"
+			crt.Screen.Send(name_cmd)
+			crt.Screen.WaitForStrings([name_cmd + "r", name_cmd + "\n"])
 			strHostnameData = crt.Screen.ReadString(["\r", "\n"])
-			strHostname = strHostnameData.split()[1]         
-			crt.Screen.WaitForString("#")
-			
-			cmd = "copy run tftp://%s/%s-%s\n" % (server, strHostname, confg)
-			crt.Screen.Send(cmd)
+			strHostname = strHostnameData.split()[1]
 			crt.Screen.WaitForString("#")
 
+			tftp_cmd = "copy run tftp://%s/%s-%s\n" % (tftpserver, strHostname, confg)
+			crt.Screen.Send(tftp_cmd)
+			crt.Screen.WaitForString("#")
+			screenrow = crt.Screen.CurrentRow - 1
+			str_error = crt.Screen.Get(screenrow, 2, screenrow, 19)
+			if str_error == "Error opening tftp":
+				errorMessages = errorMessages + "\n" + str_error + ": " + session
 			crt.Session.Disconnect()
-			# Wait for the connection to close
-			while crt.Session.Connected == True:
-				crt.Sleep(100)
-
-			crt.Sleep(1000)
 		else:
-			errorMessages = errorMessages + "\n" + "*** Error connecting to " + session + ": " + error
-
+			errorMessages = errorMessages + "\n" + "Error no host found at " + session
+			#crt.Screen.Send("exit\r")
+			crt.Session.Disconnect()
 	if errorMessages == "":
-		crt.Dialog.MessageBox("Tasks completed.  No Errors were detected.")
+		crt.Dialog.MessageBox("No Errors Found")
 	else:
-		crt.Dialog.MessageBox("Tasks completed.  The following errors occurred:\n" + errorMessages)
+		crt.Dialog.MessageBox("Tasks completed. The following errors occurred:\n" + errorMessages)
 
-#	crt.Quit()
+	crt.Screen.Synchronous = False
 
-Main()
+main()
