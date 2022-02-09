@@ -13,9 +13,9 @@ confg = "confg"
 def main():
 	errorMessages = ""
 	sessionsFileName = open(r"C:\Users\IEUser\Desktop\hosts.txt", "r")
-	if not os.path.exists("C:\Users\IEUser\Desktop\hosts.txt"):
-		crt.Dialog.MessageBox("Hostfile not found")
-		return
+#	if not os.path.exists("C:\Users\IEUser\Desktop\hosts.txt"):
+#		crt.Dialog.MessageBox("Hostfile not found")
+#		return
 
 	sessionFile = open(r"C:\Users\IEUser\Desktop\hosts.txt", "r")
 	sessionsArray = []
